@@ -24,7 +24,7 @@ namespace PostgresImporter
             CONNECTION_STRING = String.Format(CONNECTION_STRING, args[0], args[1], args[2], args[3], args[4]);
 
             List<FileInfo> paths = new List<FileInfo>();
-            DirectoryInfo tablesDir = new DirectoryInfo(args[0]);
+            DirectoryInfo tablesDir = new DirectoryInfo(args[5]);
             foreach (FileInfo file in tablesDir.GetFiles())
             {
                 if (file.Extension.ToLower() == ".csv")
