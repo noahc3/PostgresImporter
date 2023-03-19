@@ -58,6 +58,7 @@ namespace PostgresImporter
                 using (var reader = new StreamReader(file.FullName))
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
+                    int count = 0;
                     csv.Read();
                     csv.ReadHeader();
                     string[] headers = csv.HeaderRecord!;
@@ -97,7 +98,13 @@ namespace PostgresImporter
                                         break;
                                 }
                             }
+
+                            if (++count % IMPORT_BUF_SIZE == 0)
+                            {
+                                Console.Write($"\rImporting {meta.Name}... ({Math.Floor(100.0*count/meta.RowCount)}% {count}/{meta.RowCount})");
+                            }
                         }
+                        Console.WriteLine($"\rImporting {meta.Name}... (100% {count}/{meta.RowCount})\n");
                         writer.Complete();
                     }
                 }
@@ -107,8 +114,9 @@ namespace PostgresImporter
         static RelationMeta AnalyzeTable(FileInfo file)
         {
             string tableName = file.Name.Substring(0, file.Name.Length - file.Extension.Length);
-            Console.WriteLine($"Analyzing {tableName}...");
+            Console.Write($"Analyzing {tableName}... (0)");
 
+            int count = 0;
             string[] headers;
             int[] typeProperties;
             using (var reader = new StreamReader(file.FullName))
@@ -126,7 +134,14 @@ namespace PostgresImporter
                         string value = csv.GetField<string>(i)!;
                         typeProperties[i] |= AnalyzeValue(value);
                     }
+
+                    if (++count % IMPORT_BUF_SIZE == 0)
+                    {
+                        Console.Write($"\rAnalyzing {tableName}... ({count})");
+                    }
                 }
+
+                Console.WriteLine($"\rAnalyzing {tableName}... ({count})");
             }
 
             string[] attributeTypes = new string[typeProperties.Length];
@@ -139,9 +154,9 @@ namespace PostgresImporter
             string copyStmt = GetCopyStatement(tableName, headers);
             string dropStatement = GetDropStatement(tableName);
 
-            Console.WriteLine(createStmt + "\n");
+            Console.WriteLine("Generated schema: " + createStmt);
 
-            return new RelationMeta(tableName, headers, attributeTypes, createStmt, copyStmt, dropStatement);
+            return new RelationMeta(tableName, headers, attributeTypes, createStmt, copyStmt, dropStatement, count);
         }
         
 

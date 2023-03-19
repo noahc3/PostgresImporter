@@ -13,13 +13,15 @@ namespace PostgresImporter
         public string CreateStatement;
         public string CopyStatement;
         public string DropStatement;
-        public RelationMeta(string name, string[] attributes, string[] types, string createStatement, string copyStatement, string dropStatement) {
+        public int RowCount;
+        public RelationMeta(string name, string[] attributes, string[] types, string createStatement, string copyStatement, string dropStatement, int rowCount) {
             Name = name;
             Attributes = attributes;
             Types = types;
             CreateStatement = createStatement;
             CopyStatement = copyStatement;
             DropStatement = dropStatement;
+            RowCount = rowCount;
         }
     }
 }
